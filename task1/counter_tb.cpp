@@ -25,15 +25,22 @@ int main(int argc, char **argv, char **env) {
 
         // dump variables into VCD file and toggle clock
 
+        // for each clock cycle, we toggle the clock signal twice, representing the rising and falling edge
         for (clk=0; clk<2; clk++){
-            tfp->dump (2*i+clk);
-            top->clk = !top->clk;
-            top->eval ();
+            tfp->dump (2*i+clk); // using 2i + clk allows us to see the "within the clock cycle", representing accuractely the time ponit in the simulation
+            top->clk = !top->clk; // This toggles the clock signal between high and low (simply negating itself), simulating the clock cycle.
+            top->eval (); // the eval function tells Verilator to evaluate the current state in the device under test (DUT).
+            // This means we are updating the internal logic of the counter based of the new input values.
         }
+
+
         top->rst = (i <2) | (i == 15);
         top->en = (i>4);
+        // This checks whether the simulation has been signaled to stop, which would cause an early exit.
         if (Verilated::gotFinish()) exit(0);
+
     }
+    // This finalize the waveform for GTKWave, and exit(0) exits the program.
     tfp->close();
     exit(0);
 }
