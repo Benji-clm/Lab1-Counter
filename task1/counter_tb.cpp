@@ -5,6 +5,8 @@
 int main(int argc, char **argv, char **env) {
     int i;
     int clk;
+    int pause_cycles = 0;
+    bool paused = false;
 
     Verilated::commandArgs(argc, argv);
     // init top verilog instance
@@ -33,9 +35,32 @@ int main(int argc, char **argv, char **env) {
             // This means we are updating the internal logic of the counter based of the new input values.
         }
 
+        top->rst = (i <2);
 
-        top->rst = (i <2) | (i == 15);
-        top->en = (i>4);
+        if(top->count == 0x1A){
+            top->rst = 1;
+        }
+        else if(top->count == 0x1B){
+            top->rst = 0;
+        }
+
+        if(top->count == 0x9 && !paused){
+            pause_cycles = 3;
+            paused = true;
+        }
+
+        if(pause_cycles > 0 ){
+            top->en = 0;
+            pause_cycles--;
+        }
+        else if(paused && pause_cycles == 0){
+            top->en = 1;
+            paused = false;
+        }
+        else{
+            top->en = (i > 4);
+        }
+
         // This checks whether the simulation has been signaled to stop, which would cause an early exit.
         if (Verilated::gotFinish()) exit(0);
 
