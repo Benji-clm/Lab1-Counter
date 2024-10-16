@@ -1,7 +1,6 @@
 #include "Vcounter.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
-#include "vbuddy.cpp"
 
 int main(int argc, char **argv, char **env) {
     int i;
@@ -17,10 +16,6 @@ int main(int argc, char **argv, char **env) {
     VerilatedVcdC* tfp = new VerilatedVcdC;
     top->trace (tfp, 99);
     tfp->open ("counter.vcd");
-
-    // init Vbuddy
-    if (vbdOpen()!=1) return(-1);
-    vbdHeader("Lab 1: Counter");
 
     // initialize simulation inputs
     top->clk = 1;
@@ -40,10 +35,14 @@ int main(int argc, char **argv, char **env) {
             // This means we are updating the internal logic of the counter based of the new input values.
         }
 
-        vbdPlot(int(top->count), 0, 255);
-        vbdCycle(i+1);
-
         top->rst = (i <2);
+
+        if(top->count == 0x1A){
+            top->rst = 1;
+        }
+        else if(top->count == 0x1B){
+            top->rst = 0;
+        }
 
         if(top->count == 0x9 && !paused){
             pause_cycles = 3;
@@ -61,8 +60,6 @@ int main(int argc, char **argv, char **env) {
         else{
             top->en = (i > 4);
         }
-        
-        top->en = vbdFlag();
 
         // This checks whether the simulation has been signaled to stop, which would cause an early exit.
         if (Verilated::gotFinish()) exit(0);
@@ -70,7 +67,6 @@ int main(int argc, char **argv, char **env) {
     }
     // This finalize the waveform for GTKWave, and exit(0) exits the program.
 
-    vbdClose();
     tfp->close();
     exit(0);
 }
