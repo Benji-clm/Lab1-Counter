@@ -28,7 +28,7 @@ int main(int argc, char **argv, char **env) {
     top->clk = 1;
     top->rst = 1;
     top->ld = 0;
-    top->v = 0x27;
+    top->v = 0;
 
     // run simulation for many clock cycles
     for (i=0; i<300; i++) {
@@ -49,7 +49,10 @@ int main(int argc, char **argv, char **env) {
 
         top->ld = vbdFlag();
 
-        vbdPlot(int(top->count), 0, 255);
+        vbdHex(4, (int(top->count) >> 12) & 0xF);
+        vbdHex(3, (int(top->count) >> 8) & 0xF);
+        vbdHex(2, (int(top->count) >> 4) & 0xF);
+        vbdHex(1, int(top->count) & 0xF);
 
         // This checks whether the simulation has been signaled to stop, which would cause an early exit.
         if (Verilated::gotFinish()) exit(0);
